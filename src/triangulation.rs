@@ -28,6 +28,35 @@ pub struct Triangulation {
 }
 
 impl Triangulation {
+    pub fn flip_edge(&mut self, edge: &Edge) -> Option<Edge> {
+        // TODO: Add diagram of what is happening
+        let x = edge.x;
+        let y = edge.y;
+
+        let cycle_x = self.vertex_cycles.get_mut(&x).unwrap();
+        let u = cycle_x.prev_node[&y];
+        let v = cycle_x.next_node[&y];
+        let new_edge = Edge::new(u, v);
+
+        if self.edges.contains(&new_edge) {
+            return None;
+        }
+        cycle_x.remove_vertex(y);
+
+        let cycle_y = self.vertex_cycles.get_mut(&y).unwrap();
+        cycle_y.remove_vertex(x);
+
+        let cycle_u = self.vertex_cycles.get_mut(&u).unwrap();
+        cycle_u.add_vertex(v, y, x);
+
+        let cycle_v = self.vertex_cycles.get_mut(&v).unwrap();
+        cycle_v.add_vertex(u, x, y);
+
+        return Some(new_edge);
+    }
+}
+
+impl Triangulation {
     pub fn from_adjacency(adjacency: &HashMap<usize, Vec<usize>>) -> Self {
         let mut edges: HashSet<Edge> = HashSet::new();
         let mut vertex_cycles: HashMap<usize, VertexCycle> = HashMap::new();
