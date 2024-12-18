@@ -36,6 +36,10 @@ impl Triangulation {
         return *edge;
     }
 
+    pub fn num_vertices(&self) -> usize {
+        return self.vertex_cycles.len();
+    }
+
     pub fn flip_edge(&mut self, edge: &Edge) -> Option<Edge> {
         // TODO: Add diagram of what is happening
         let x = edge.x;

@@ -1,6 +1,8 @@
+mod km_annealer;
 mod triangulation;
 use std::{collections::HashMap, env};
 
+use km_annealer::anneal;
 use triangulation::{Edge, Triangulation};
 
 fn main() {
