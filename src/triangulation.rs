@@ -1,8 +1,8 @@
+use rand::prelude::*;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 pub struct VertexCycle {
-    pub nodes: Vec<usize>,
     prev_node: HashMap<usize, usize>,
     next_node: HashMap<usize, usize>,
 }
@@ -28,6 +28,12 @@ pub struct Triangulation {
 }
 
 impl Triangulation {
+    pub fn random_edge(&self) -> Edge {
+        let edge_vec: Vec<&Edge> = self.edges.iter().collect();
+        let edge = edge_vec.into_iter().choose(&mut thread_rng()).unwrap();
+        return *edge;
+    }
+
     pub fn flip_edge(&mut self, edge: &Edge) -> Option<Edge> {
         // TODO: Add diagram of what is happening
         let x = edge.x;
@@ -38,7 +44,7 @@ impl Triangulation {
         let v = cycle_x.next_node[&y];
         let new_edge = Edge::new(u, v);
 
-        if self.edges.contains(&new_edge) {
+        if (u == v) | self.edges.contains(&new_edge) {
             return None;
         }
         cycle_x.remove_vertex(y);
@@ -51,6 +57,9 @@ impl Triangulation {
 
         let cycle_v = self.vertex_cycles.get_mut(&v).unwrap();
         cycle_v.add_vertex(u, x, y);
+
+        self.edges.remove(edge);
+        self.edges.insert(new_edge);
 
         return Some(new_edge);
     }
@@ -77,7 +86,6 @@ impl Triangulation {
 #[allow(dead_code)]
 impl VertexCycle {
     pub fn add_vertex(&mut self, v: usize, prev: usize, next: usize) {
-        self.nodes.push(v);
         self.prev_node.insert(v, prev);
         self.next_node.insert(v, next);
         self.next_node.insert(prev, v);
@@ -101,7 +109,6 @@ impl VertexCycle {
             prev_node.insert(w, *v);
         }
         return Self {
-            nodes,
             prev_node,
             next_node,
         };
