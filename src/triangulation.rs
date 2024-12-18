@@ -1,5 +1,6 @@
+use hashbrown::HashSet;
 use rand::prelude::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct VertexCycle {
@@ -29,8 +30,9 @@ pub struct Triangulation {
 
 impl Triangulation {
     pub fn random_edge(&self) -> Edge {
-        let edge_vec: Vec<&Edge> = self.edges.iter().collect();
-        let edge = edge_vec.into_iter().choose(&mut thread_rng()).unwrap();
+        // let edge_vec: Vec<&Edge> = self.edges.iter().collect();
+        // let edge = edge_vec.into_iter().choose(&mut thread_rng()).unwrap();
+        let edge = self.edges.iter().choose(&mut thread_rng()).unwrap();
         return *edge;
     }
 
