@@ -43,6 +43,7 @@ impl Triangulation {
     pub fn flip_edge(&mut self, edge: &Edge) -> Option<Edge> {
         // TODO: Add diagram of what is happening
         // TODO: try get_mut all in one place using non-lexical lifetimes (opt-in)
+        // ^ already doing that
         let x = edge.x;
         let y = edge.y;
 
