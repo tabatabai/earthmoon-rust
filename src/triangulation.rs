@@ -24,7 +24,7 @@ impl Edge {
 
 #[derive(Debug)]
 pub struct Triangulation {
-    edges: HashSet<Edge>,
+    pub edges: HashSet<Edge>,
     vertex_cycles: HashMap<usize, VertexCycle>,
 }
 

@@ -77,11 +77,14 @@ fn main() {
     adjacency.insert(49, vec![46, 40, 31, 37]);
     adjacency.insert(31, vec![49, 40, 37]);
 
-    let mut triangulation = Triangulation::from_adjacency(&adjacency);
-    println!("{:?}", triangulation);
+    let g = Triangulation::from_adjacency(&adjacency);
+    let h = Triangulation::from_adjacency(&adjacency);
+    println!("{:?}", g);
 
-    for _ in 0..10_000_000 {
-        let e = triangulation.random_edge();
-        let new_edge = triangulation.flip_edge(&e);
-    }
+    // for _ in 0..10_000_000 {
+    //     let e = triangulation.random_edge();
+    //     let new_edge = triangulation.flip_edge(&e);
+    // }
+
+    anneal(g, h, 6);
 }
