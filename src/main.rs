@@ -86,5 +86,5 @@ fn main() {
     //     let new_edge = triangulation.flip_edge(&e);
     // }
 
-    anneal(g, h, 6);
+    anneal(g, h, 4);
 }

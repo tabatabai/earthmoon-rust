@@ -23,11 +23,30 @@ fn build_counter_and_aux(n: usize, m: usize) -> (Vec<usize>, HashMap<Edge, Vec<u
     return (counter, edge_to_counter_indices);
 }
 
-fn update_score(score: &mut usize, )
+fn update(
+    score: &mut usize,
+    counter: &mut Vec<usize>,
+    edge_to_counter_indices: &HashMap<Edge, Vec<usize>>,
+    new_edge: &Edge,
+    old_edge: &Edge,
+) {
+    for i in edge_to_counter_indices.get(old_edge).unwrap() {
+        counter[*i] -= 1;
+        if counter[*i] == 0 {
+            *score -= 1;
+        }
+    }
+    for i in edge_to_counter_indices.get(new_edge).unwrap() {
+        counter[*i] += 1;
+        if counter[*i] == 1 {
+            *score += 1;
+        }
+    }
+}
 
 pub fn anneal(mut g: Triangulation, mut h: Triangulation, m: usize) {
     let n = g.num_vertices();
-    let (mut counter, mut edge_to_counter_indices) = build_counter_and_aux(n, m);
+    let (mut counter, edge_to_counter_indices) = build_counter_and_aux(n, m);
 
     let mut score: usize = 0;
     for e in g.edges.iter().chain(h.edges.iter()) {
@@ -43,11 +62,32 @@ pub fn anneal(mut g: Triangulation, mut h: Triangulation, m: usize) {
     let mut current_iter: usize = 0;
     loop {
         current_iter += 1;
-        if current_iter % 1024 == 0 {
-            print!("Iteration {current_iter}");
+        if current_iter % 1048576 == 0 {
+            print!("Iteration {current_iter}, score {score}\n");
         }
-
-
-
+        let old_e = g.random_edge();
+        let new_e = g.flip_edge(&old_e);
+        match new_e {
+            Some(e) => update(
+                &mut score,
+                &mut counter,
+                &edge_to_counter_indices,
+                &e,
+                &old_e,
+            ),
+            None => {}
+        }
+        let old_e = h.random_edge();
+        let new_e = h.flip_edge(&old_e);
+        match new_e {
+            Some(e) => update(
+                &mut score,
+                &mut counter,
+                &edge_to_counter_indices,
+                &e,
+                &old_e,
+            ),
+            None => {}
+        }
     }
 }
