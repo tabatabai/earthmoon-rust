@@ -7,7 +7,7 @@ use std::{
     vec,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VertexCycle {
     prev_node: HashMap<usize, usize>,
     next_node: HashMap<usize, usize>,
@@ -58,7 +58,7 @@ impl Edge {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Triangulation {
     pub edges: HashSet<Edge>,
     vertex_cycles: HashMap<usize, VertexCycle>,

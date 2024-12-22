@@ -1,6 +1,10 @@
 mod km_annealer;
 mod triangulation;
-use std::env;
+use std::{
+    env,
+    thread::{self, sleep},
+    time::Duration,
+};
 
 use km_annealer::anneal;
 use triangulation::Triangulation;
@@ -18,10 +22,31 @@ fn main() {
     let h = Triangulation::from_random_appolonian_network(n);
     println!("{:?}", g);
 
+    let mut handles = Vec::new();
+    for _ in 0..6 {
+        let g_tmp = g.clone();
+        let h_tmp = h.clone();
+        let handle = thread::spawn(move || anneal(g_tmp, h_tmp, m, max_len, prob_reject_worse));
+        handles.push(handle);
+    }
+
+    let mut done: bool = false;
+    loop {
+        for h in handles.iter() {
+            if h.is_finished() {
+                done = true;
+            }
+        }
+        if done {
+            break;
+        }
+        sleep(Duration::from_secs(1));
+    }
+
     // for _ in 0..10_000_000 {
     //     let e = triangulation.random_edge();
     //     let new_edge = triangulation.flip_edge(&e);
     // }
 
-    anneal(g, h, m, max_len, prob_reject_worse);
+    // anneal(g, h, m, max_len, prob_reject_worse);
 }
