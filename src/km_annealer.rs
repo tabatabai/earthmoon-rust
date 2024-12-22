@@ -170,7 +170,7 @@ pub fn anneal(
     }
     loop {
         iter += 1;
-        if iter % 32768 == 0 {
+        if iter % 1048576 == 0 {
             print!(
                 "Score: {} | {} / {} Current iter: {}\n",
                 score_keeper.score, best_score, score_keeper.goal, iter
