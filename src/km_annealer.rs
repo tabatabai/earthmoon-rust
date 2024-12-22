@@ -4,18 +4,17 @@ use rand::Rng;
 
 use crate::triangulation::{Edge, Triangulation};
 
-struct BiplanarKmAnnealer {
+struct ScoreKeeper {
     score: usize,
     goal: usize,
     counter: Vec<usize>,
     edge_to_counter_indices: HashMap<Edge, Vec<usize>>,
 }
 
-impl BiplanarKmAnnealer {
-    // Functions for initializing BiplanarKmAnnealer
+impl ScoreKeeper {
+    // Functions for initializing ScoreKeeper
     pub fn new(n: usize, m: usize) -> Self {
-        let (counter, edge_to_counter_indices) =
-            BiplanarKmAnnealer::build_empty_counter_and_aux(n, m);
+        let (counter, edge_to_counter_indices) = ScoreKeeper::build_empty_counter_and_aux(n, m);
         let score = 0;
         let goal = counter.len();
         return Self {
@@ -47,7 +46,7 @@ impl BiplanarKmAnnealer {
     }
 }
 
-impl BiplanarKmAnnealer {
+impl ScoreKeeper {
     // Score update functions
     pub fn calculate_score_full(&mut self, g: &Triangulation, h: &Triangulation) {
         self.score = 0;
@@ -81,50 +80,60 @@ impl BiplanarKmAnnealer {
     }
 }
 
-impl BiplanarKmAnnealer {
-    // Functions related to search / flipping of edges
-    pub fn flip_random_edge_if_improvement(
-        &mut self,
-        g: &mut Triangulation,
-        h: &mut Triangulation,
-    ) {
-        let old_score = self.score;
-        let graph_idx = rand::thread_rng().gen_range(0..=1);
-        let graph = match graph_idx {
-            0 => g,
-            1 => h,
-            _ => unreachable!(),
-        };
-        let old_edge = graph.random_edge();
-        let new_edge = graph.flip_edge(&old_edge);
-        match new_edge {
-            Some(edge) => self.update_score(&edge, &old_edge),
-            None => {}
-        }
-        if self.score < old_score {
-            graph.flip_edge(&new_edge.unwrap());
-            self.update_score(&old_edge, &new_edge.unwrap());
-        } else if self.score > old_score {
-            print!("New best score {} / {}\n", self.score, self.goal)
-        }
+// Functions related to search / flipping of edges
+fn flip_random_edge_if_improvement(
+    score_keeper: &mut ScoreKeeper,
+    g: &mut Triangulation,
+    h: &mut Triangulation,
+    prob_reject_worse: f32,
+) {
+    let old_score = score_keeper.score;
+    let graph_idx = rand::thread_rng().gen_range(0..=1);
+    let graph = match graph_idx {
+        0 => g,
+        1 => h,
+        _ => unreachable!(),
+    };
+    let old_edge = graph.random_edge();
+    let new_edge = graph.flip_edge(&old_edge);
+    match new_edge {
+        Some(edge) => score_keeper.update_score(&edge, &old_edge),
+        None => {}
+    }
+    if score_keeper.score < old_score && rand::thread_rng().gen_range(0.0..1.0) < prob_reject_worse
+    {
+        graph.flip_edge(&new_edge.unwrap());
+        score_keeper.update_score(&old_edge, &new_edge.unwrap());
     }
 }
 
-pub fn anneal(mut g: Triangulation, mut h: Triangulation, m: usize) {
+pub fn anneal(mut g: Triangulation, mut h: Triangulation, m: usize, prob_reject_worse: f32) {
     let n = g.num_vertices();
-    let mut annealer = BiplanarKmAnnealer::new(n, m);
-    annealer.calculate_score_full(&g, &h);
+    let mut score_keeper = ScoreKeeper::new(n, m);
+    score_keeper.calculate_score_full(&g, &h);
     let mut iter = 0;
+    let mut best_score = 0;
+    for _ in 0..100_000 {
+        // Shuffle
+        flip_random_edge_if_improvement(&mut score_keeper, &mut g, &mut h, 0.0);
+    }
     loop {
         iter += 1;
         if iter % 1024 == 0 {
-            print!("{}\n", iter);
+            print!(
+                "Current iter {} - {} / { }\n",
+                iter, best_score, score_keeper.goal
+            );
         }
-        annealer.flip_random_edge_if_improvement(&mut g, &mut h);
-        if annealer.score == annealer.goal - 10 {
+        flip_random_edge_if_improvement(&mut score_keeper, &mut g, &mut h, prob_reject_worse);
+        if score_keeper.score == score_keeper.goal {
             print!("{:?}\n", g.edges);
             print!("{:?}\n", h.edges);
             break;
+        }
+        if score_keeper.score > best_score {
+            best_score = score_keeper.score;
+            print!("Found new best {} / {}\n", best_score, score_keeper.goal);
         }
     }
 }
