@@ -4,7 +4,6 @@ use std::{
     cmp::{max, min},
     collections::HashMap,
     hash::Hash,
-    ops::Index,
     vec,
 };
 

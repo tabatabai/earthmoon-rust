@@ -7,8 +7,8 @@ use triangulation::Triangulation;
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
-    let g = Triangulation::from_random_appolonian_network(17);
-    let h = Triangulation::from_random_appolonian_network(17);
+    let g = Triangulation::from_random_appolonian_network(55);
+    let h = Triangulation::from_random_appolonian_network(55);
     println!("{:?}", g);
 
     // for _ in 0..10_000_000 {
@@ -16,5 +16,5 @@ fn main() {
     //     let new_edge = triangulation.flip_edge(&e);
     // }
 
-    anneal(g, h, 3);
+    anneal(g, h, 5);
 }

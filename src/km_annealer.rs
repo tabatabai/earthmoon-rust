@@ -114,7 +114,17 @@ pub fn anneal(mut g: Triangulation, mut h: Triangulation, m: usize) {
     let n = g.num_vertices();
     let mut annealer = BiplanarKmAnnealer::new(n, m);
     annealer.calculate_score_full(&g, &h);
+    let mut iter = 0;
     loop {
+        iter += 1;
+        if iter % 1024 == 0 {
+            print!("{}\n", iter);
+        }
         annealer.flip_random_edge_if_improvement(&mut g, &mut h);
+        if annealer.score == annealer.goal - 10 {
+            print!("{:?}\n", g.edges);
+            print!("{:?}\n", h.edges);
+            break;
+        }
     }
 }
