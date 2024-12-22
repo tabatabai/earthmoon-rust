@@ -139,6 +139,7 @@ fn find_random_improving_edge_sequence(
     }
     if score_keeper.score < old_score && rand::thread_rng().gen_range(0.0..1.0) < prob_reject_worse
     {
+        print!("Score before {} undoing\n", score_keeper.score);
         choice_sequence.reverse();
         for (e, g_idx) in choice_sequence.iter() {
             let graph = match g_idx {
@@ -148,6 +149,7 @@ fn find_random_improving_edge_sequence(
             };
             let new_e = graph.flip_edge(e);
             score_keeper.update_score(&new_e.unwrap(), e);
+            print!("Score after {} undoing\n", score_keeper.score);
         }
     }
 }
@@ -172,7 +174,7 @@ pub fn anneal(
         iter += 1;
         if iter % 32768 == 0 {
             print!(
-                "Current iter {} - {} / { }\n",
+                "Current iter {} - {} / {} \n",
                 iter, score_keeper.score, score_keeper.goal
             );
         }
