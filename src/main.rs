@@ -11,6 +11,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let n: usize = args[1].parse().unwrap();
     let m: usize = args[2].parse().unwrap();
+    let max_len: usize = args[2].parse().unwrap();
     let prob_reject_worse: f32 = args[3].parse().unwrap();
 
     let g = Triangulation::from_random_appolonian_network(n);
@@ -22,5 +23,5 @@ fn main() {
     //     let new_edge = triangulation.flip_edge(&e);
     // }
 
-    anneal(g, h, m, prob_reject_worse);
+    anneal(g, h, m, max_len, prob_reject_worse);
 }

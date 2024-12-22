@@ -13,6 +13,37 @@ pub struct VertexCycle {
     next_node: HashMap<usize, usize>,
 }
 
+impl VertexCycle {
+    pub fn add_vertex(&mut self, v: usize, prev: usize, next: usize) {
+        self.prev_node.insert(v, prev);
+        self.next_node.insert(v, next);
+        self.next_node.insert(prev, v);
+        self.prev_node.insert(next, v);
+    }
+    pub fn remove_vertex(&mut self, v: usize) {
+        // TODO: I do not understand why i can not dereference 4 times in the arguments
+        // of the insert method call
+        let next = *self.next_node.get(&v).unwrap();
+        let prev = *self.prev_node.get(&v).unwrap();
+        self.prev_node.insert(next, prev);
+        self.next_node.insert(prev, next);
+    }
+
+    pub fn new(nodes: Vec<usize>) -> Self {
+        let mut prev_node: HashMap<usize, usize> = HashMap::new();
+        let mut next_node: HashMap<usize, usize> = HashMap::new();
+        for (i, v) in nodes.iter().enumerate() {
+            let w = nodes[(i + 1) % nodes.len()];
+            next_node.insert(*v, w);
+            prev_node.insert(w, *v);
+        }
+        return Self {
+            prev_node,
+            next_node,
+        };
+    }
+}
+
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Edge {
     x: usize,
@@ -172,37 +203,5 @@ impl Triangulation {
         }
         adjacency = randomly_permute_adjacency(&adjacency);
         return Self::from_adjacency(&adjacency);
-    }
-}
-
-#[allow(dead_code)]
-impl VertexCycle {
-    pub fn add_vertex(&mut self, v: usize, prev: usize, next: usize) {
-        self.prev_node.insert(v, prev);
-        self.next_node.insert(v, next);
-        self.next_node.insert(prev, v);
-        self.prev_node.insert(next, v);
-    }
-    pub fn remove_vertex(&mut self, v: usize) {
-        // TODO: I do not understand why i can not dereference 4 times in the arguments
-        // of the insert method call
-        let next = *self.next_node.get(&v).unwrap();
-        let prev = *self.prev_node.get(&v).unwrap();
-        self.prev_node.insert(next, prev);
-        self.next_node.insert(prev, next);
-    }
-
-    pub fn new(nodes: Vec<usize>) -> Self {
-        let mut prev_node: HashMap<usize, usize> = HashMap::new();
-        let mut next_node: HashMap<usize, usize> = HashMap::new();
-        for (i, v) in nodes.iter().enumerate() {
-            let w = nodes[(i + 1) % nodes.len()];
-            next_node.insert(*v, w);
-            prev_node.insert(w, *v);
-        }
-        return Self {
-            prev_node,
-            next_node,
-        };
     }
 }
