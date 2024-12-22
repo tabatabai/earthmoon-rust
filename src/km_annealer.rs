@@ -172,8 +172,8 @@ pub fn anneal(
         iter += 1;
         if iter % 32768 == 0 {
             print!(
-                "Current iter {} - {} / {} \n",
-                iter, score_keeper.score, score_keeper.goal
+                "Score: {} | {} / {} Current iter: {}\n",
+                score_keeper.score, best_score, score_keeper.goal, iter
             );
         }
         // flip_random_edge_if_improvement(&mut score_keeper, &mut g, &mut h, prob_reject_worse);
