@@ -1,6 +1,12 @@
 use hashbrown::HashSet;
 use rand::prelude::*;
-use std::collections::HashMap;
+use std::{
+    cmp::{max, min},
+    collections::HashMap,
+    hash::Hash,
+    ops::Index,
+    vec,
+};
 
 #[derive(Debug)]
 pub struct VertexCycle {
@@ -73,6 +79,23 @@ impl Triangulation {
     }
 }
 
+pub fn randomly_permute_adjacency(
+    adjaceny: &HashMap<usize, Vec<usize>>,
+) -> HashMap<usize, Vec<usize>> {
+    let mut perm: Vec<usize> = (0..adjaceny.len()).collect();
+    perm.shuffle(&mut thread_rng());
+    let mut new_adjacency: HashMap<usize, Vec<usize>> = HashMap::new();
+    for (k, neighbors) in adjaceny.iter() {
+        let new_k = perm[*k];
+        let mut new_neighbors: Vec<usize> = Vec::new();
+        for neighbor in neighbors {
+            new_neighbors.push(perm[*neighbor]);
+        }
+        new_adjacency.insert(new_k, new_neighbors);
+    }
+    return new_adjacency;
+}
+
 impl Triangulation {
     pub fn from_adjacency(adjacency: &HashMap<usize, Vec<usize>>) -> Self {
         let mut edges: HashSet<Edge> = HashSet::new();
@@ -88,6 +111,68 @@ impl Triangulation {
             edges,
             vertex_cycles,
         };
+    }
+
+    pub fn from_random_appolonian_network(n: usize) -> Self {
+        let mut faces: Vec<Vec<usize>> = vec![vec![0, 1, 3], vec![0, 3, 2], vec![1, 2, 3]];
+        let mut adjacency: HashMap<usize, Vec<usize>> = HashMap::new();
+        adjacency.insert(0, vec![1, 3, 2]);
+        adjacency.insert(1, vec![2, 3, 0]);
+        adjacency.insert(2, vec![0, 3, 1]);
+        adjacency.insert(3, vec![0, 1, 2]);
+        for v in 4..n {
+            let face_idx = (0..faces.len()).choose(&mut thread_rng()).unwrap();
+            let face = faces[face_idx].clone();
+            faces.remove(face_idx);
+            adjacency.insert(v, face.clone());
+            let (x, y, z) = (face[0], face[1], face[2]);
+            faces.push(vec![v, x, y]);
+            faces.push(vec![v, z, x]);
+            faces.push(vec![v, y, z]);
+
+            // Face is x-y-z (cyclic), we add v in the middle
+
+            // Update adj of x
+            // insert v between y and z
+            let x_neighbors = adjacency.get_mut(&x).unwrap();
+            let idx_y = x_neighbors.iter().position(|i| *i == y).unwrap();
+            let idx_z = x_neighbors.iter().position(|i| *i == z).unwrap();
+            let idx_min = min(idx_y, idx_z);
+            let idx_max = max(idx_y, idx_z);
+            if (idx_min, idx_max) != (0, x_neighbors.len() - 1) {
+                x_neighbors.insert(idx_max, v);
+            } else {
+                x_neighbors.push(v);
+            }
+
+            // Update adj of y
+            // insert v between x and z
+            let y_neighbors = adjacency.get_mut(&y).unwrap();
+            let idx_x = y_neighbors.iter().position(|i| *i == x).unwrap();
+            let idx_z = y_neighbors.iter().position(|i| *i == z).unwrap();
+            let idx_min = min(idx_x, idx_z);
+            let idx_max = max(idx_x, idx_z);
+            if (idx_min, idx_max) != (0, y_neighbors.len() - 1) {
+                y_neighbors.insert(idx_max, v);
+            } else {
+                y_neighbors.push(v);
+            }
+
+            // Update adj of z
+            // insert v between x and y
+            let z_neighbors = adjacency.get_mut(&z).unwrap();
+            let idx_x = z_neighbors.iter().position(|i| *i == x).unwrap();
+            let idx_y = z_neighbors.iter().position(|i| *i == y).unwrap();
+            let idx_min = min(idx_x, idx_y);
+            let idx_max = max(idx_x, idx_y);
+            if (idx_min, idx_max) != (0, z_neighbors.len() - 1) {
+                z_neighbors.insert(idx_max, v);
+            } else {
+                z_neighbors.push(v);
+            }
+        }
+        adjacency = randomly_permute_adjacency(&adjacency);
+        return Self::from_adjacency(&adjacency);
     }
 }
 
