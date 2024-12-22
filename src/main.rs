@@ -19,8 +19,6 @@ fn main() {
     let prob_reject_worse: f32 = args[4].parse().unwrap();
     let num_threads: usize = args[5].parse().unwrap();
 
-    println!("{:?}", g);
-
     let mut handles = Vec::new();
     for _ in 0..num_threads {
         let g = Triangulation::from_random_appolonian_network(n);
