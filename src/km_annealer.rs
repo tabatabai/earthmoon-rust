@@ -162,7 +162,7 @@ pub fn anneal(
     let n = g.num_vertices();
     let mut score_keeper = ScoreKeeper::new(n, m);
     score_keeper.calculate_score_full(&g, &h);
-    let mut iter = 0;
+    let mut iter: u128 = 0;
     let mut best_score = 0;
     for _ in 0..10_000 {
         // Shuffle
