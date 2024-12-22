@@ -1,5 +1,6 @@
 use hashbrown::HashMap;
 use itertools::Itertools;
+use rand::Rng;
 
 use crate::triangulation::{Edge, Triangulation};
 
@@ -59,8 +60,12 @@ pub fn anneal(mut g: Triangulation, mut h: Triangulation, m: usize) {
         }
     }
 
+    let goal = counter.len();
+
     let mut current_iter: usize = 0;
+    let mut best_score: usize = 0;
     loop {
+        let old_score = score;
         current_iter += 1;
         if current_iter % 1048576 == 0 {
             print!("Iteration {current_iter}, score {score}\n");
@@ -68,26 +73,61 @@ pub fn anneal(mut g: Triangulation, mut h: Triangulation, m: usize) {
         let old_e = g.random_edge();
         let new_e = g.flip_edge(&old_e);
         match new_e {
-            Some(e) => update(
-                &mut score,
-                &mut counter,
-                &edge_to_counter_indices,
-                &e,
-                &old_e,
-            ),
+            Some(e) => {
+                update(
+                    &mut score,
+                    &mut counter,
+                    &edge_to_counter_indices,
+                    &e,
+                    &old_e,
+                );
+                if score < old_score || rand::thread_rng().gen_range(0.0..1.0) < 0.1 {
+                    g.flip_edge(&e);
+                    update(
+                        &mut score,
+                        &mut counter,
+                        &edge_to_counter_indices,
+                        &old_e,
+                        &e,
+                    );
+                }
+            }
             None => {}
         }
+
+        if score > best_score {
+            best_score = score;
+            println!("New best: {best_score} / {goal}");
+        }
+
         let old_e = h.random_edge();
         let new_e = h.flip_edge(&old_e);
         match new_e {
-            Some(e) => update(
-                &mut score,
-                &mut counter,
-                &edge_to_counter_indices,
-                &e,
-                &old_e,
-            ),
+            Some(e) => {
+                update(
+                    &mut score,
+                    &mut counter,
+                    &edge_to_counter_indices,
+                    &e,
+                    &old_e,
+                );
+                if score < old_score || rand::thread_rng().gen_range(0.0..1.0) < 0.1 {
+                    h.flip_edge(&e);
+                    update(
+                        &mut score,
+                        &mut counter,
+                        &edge_to_counter_indices,
+                        &old_e,
+                        &e,
+                    );
+                }
+            }
             None => {}
+        }
+
+        if score > best_score {
+            best_score = score;
+            println!("New best: {best_score} / {goal}");
         }
     }
 }
