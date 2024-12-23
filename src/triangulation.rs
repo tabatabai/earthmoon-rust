@@ -1,8 +1,7 @@
-use hashbrown::HashSet;
+use hashbrown::{HashMap, HashSet};
 use rand::prelude::*;
 use std::{
     cmp::{max, min},
-    collections::HashMap,
     hash::Hash,
     vec,
 };
