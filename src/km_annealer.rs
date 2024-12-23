@@ -81,6 +81,7 @@ impl ScoreKeeper {
 }
 
 // Functions related to search / flipping of edges
+
 fn flip_random_edge_if_improvement(
     score_keeper: &mut ScoreKeeper,
     g: &mut Triangulation,
@@ -113,11 +114,11 @@ fn find_random_improving_edge_sequence(
     h: &mut Triangulation,
     max_len: usize,
     prob_reject_worse: f32,
-) {
+) -> Option<usize> {
     let old_score = score_keeper.score;
     // usize in choice sequence elements is graph index
     let mut choice_sequence: Vec<(Edge, usize)> = Vec::new();
-    for _ in 0..max_len {
+    for i in 0..max_len {
         let graph_idx = rand::thread_rng().gen_range(0..=1);
         let graph = match graph_idx {
             0 => &mut *g,
@@ -134,7 +135,7 @@ fn find_random_improving_edge_sequence(
             None => {}
         }
         if score_keeper.score > old_score {
-            return;
+            return Some(i + 1);
         }
     }
     if score_keeper.score < old_score && rand::thread_rng().gen_range(0.0..1.0) < prob_reject_worse
@@ -150,6 +151,7 @@ fn find_random_improving_edge_sequence(
             score_keeper.update_score(&new_e.unwrap(), e);
         }
     }
+    return None;
 }
 
 pub fn anneal(
@@ -170,14 +172,14 @@ pub fn anneal(
     }
     loop {
         iter += 1;
-        if iter % 1048576 == 0 {
+        if iter % 16384 == 0 {
             print!(
                 "Score: {} | {} / {} Current iter: {}\n",
                 score_keeper.score, best_score, score_keeper.goal, iter
             );
         }
         // flip_random_edge_if_improvement(&mut score_keeper, &mut g, &mut h, prob_reject_worse);
-        find_random_improving_edge_sequence(
+        let seq_length = find_random_improving_edge_sequence(
             &mut score_keeper,
             &mut g,
             &mut h,
@@ -191,7 +193,10 @@ pub fn anneal(
         }
         if score_keeper.score > best_score {
             best_score = score_keeper.score;
-            print!("Found new best {} / {}\n", best_score, score_keeper.goal);
+            print!(
+                "Found new best {} / {} / [{:?}]\n",
+                best_score, score_keeper.goal, seq_length
+            );
         }
     }
 }
