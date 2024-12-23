@@ -23,7 +23,7 @@ fn main() {
     for _ in 0..num_threads {
         let g = Triangulation::from_random_appolonian_network(n);
         let h = Triangulation::from_random_appolonian_network(n);
-        let handle = thread::spawn(move || anneal(g_tmp, h_tmp, m, max_len, prob_reject_worse));
+        let handle = thread::spawn(move || anneal(g, h, m, max_len, prob_reject_worse));
         handles.push(handle);
     }
 
