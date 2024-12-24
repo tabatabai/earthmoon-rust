@@ -97,9 +97,8 @@ fn flip_random_edge_if_improvement(
     };
     let old_edge = graph.random_edge();
     let new_edge = graph.flip_edge(&old_edge);
-    match new_edge {
-        Some(edge) => score_keeper.update_score(&edge, &old_edge),
-        None => {}
+    if let Some(edge) = new_edge {
+        score_keeper.update_score(&edge, &old_edge)
     }
     if score_keeper.score < old_score && rand::thread_rng().gen_range(0.0..1.0) < prob_reject_worse
     {
@@ -127,12 +126,9 @@ fn find_random_improving_edge_sequence(
         };
         let old_edge = graph.random_edge();
         let new_edge = graph.flip_edge(&old_edge);
-        match new_edge {
-            Some(edge) => {
-                score_keeper.update_score(&edge, &old_edge);
-                choice_sequence.push((edge, graph_idx));
-            }
-            None => {}
+        if let Some(edge) = new_edge {
+            score_keeper.update_score(&edge, &old_edge);
+            choice_sequence.push((edge, graph_idx));
         }
         if score_keeper.score > old_score {
             return Some(i + 1);
